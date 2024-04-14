@@ -1,0 +1,16 @@
+{
+  "name": "mega_proj_back",
+  "version": "1.0.0",
+  "description": "This is a learned project from hitesh choudhary  chai aur code channel",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon index.js"
+  },
+  "keywords": [
+    "javascript",
+    "backend",
+    "chai"
+  ],
+  "author": "HC- Hrikban Saha",
+  "license": "ISC"
+}
