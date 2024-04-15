@@ -1,4 +1,4 @@
-import { Schema, model, models } from "mongoose";
+import { Schema, model } from "mongoose";
 import jwt from "jsonwebtoken";
 import { hashSync, compareSync } from "bcrypt";
 
@@ -86,4 +86,4 @@ userSchema.methods.generateRefreshToken = function () {
     );
 };
 
-export const UserSchema = models.users || model("User", userSchema);
+export const User = model("User", userSchema);
