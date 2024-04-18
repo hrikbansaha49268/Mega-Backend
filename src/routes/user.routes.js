@@ -1,7 +1,19 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { loginUser, logoutUser, refreshAccessToken, registerUser } from "../controllers/user.controller.js";
+import {
+    changeCurrentPassword,
+    getCurrentUser,
+    getUserChannelProfile,
+    getWatchHistory,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    registerUser,
+    updateAccountDetails,
+    updateUserAvatar,
+    updateUserCoverImage
+} from "../controllers/user.controller.js";
 
 const appRouter = Router();
 
@@ -21,8 +33,27 @@ appRouter.route("/register").post(
 
 appRouter.route("/login").post(loginUser);
 
+// Secured Routes
+
 appRouter.route("/logout").post(verifyJWT, logoutUser);
 
 appRouter.route("/refresh-token").post(refreshAccessToken);
+
+appRouter.route("/change-pass").post(verifyJWT, changeCurrentPassword);
+
+appRouter.route("/current-user").get(verifyJWT, getCurrentUser);
+
+appRouter.route("/update-account").patch(verifyJWT, updateAccountDetails);
+
+appRouter.route("/update-avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
+
+appRouter.route("/cover-image-update").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
+
+appRouter.route("/channel/:username").get(verifyJWT, getUserChannelProfile);
+
+appRouter.route("/watch-history").get(verifyJWT, getWatchHistory);
+
+// Secured Routes
+
 
 export default appRouter;

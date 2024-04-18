@@ -26,4 +26,21 @@ const uploadOnCloudinary = async (localFilePath) => {
     };
 };
 
-export { uploadOnCloudinary };
+const deleteImageOnCloudinary = async imageUrlinDb => {
+    try {
+        if (!localFilePath) {
+            return null;
+        } else {
+            const deleteResponse = await cloudinary.uploader.destroy(
+                imageUrlinDb,
+                { resource_type: "image", invalidate: true }
+            );
+            return deleteResponse;
+        }
+    } catch (error) {
+        console.log("File was not Uploaded");
+        return null;
+    };
+};
+
+export { uploadOnCloudinary, deleteImageOnCloudinary };
