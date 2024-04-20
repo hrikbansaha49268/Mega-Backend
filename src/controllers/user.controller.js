@@ -34,13 +34,14 @@ export const registerUser = asyncHandler(async (req, res) => {
                     coverImageLocalPath = req.files.coverImage[0].path;
                 }
                 const coverImageUrl = await uploadOnCloudinary(coverImageLocalPath);
+                
                 if (!avatarUrl) {
                     throw new ApiError(409, "Avatar is required");
                 } else {
                     const user = await User.create({
                         fullName,
-                        avatar: avatarUrl,
-                        coverImage: coverImageUrl || "",
+                        avatar: avatarUrl.url,
+                        coverImage: coverImageUrl.url || "",
                         email,
                         password,
                         username: username.toLowerCase()
