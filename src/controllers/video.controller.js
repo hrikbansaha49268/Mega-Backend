@@ -61,38 +61,72 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
-    if (isValidObjectId(videoId)) {
-        const theSpecificVideo = await VideoSchema.findById(videoId);
-        if (!theSpecificVideo) {
-            throw new ApiError(500, "This video does not exists");
-        } else {
-            const aggregatedResponse = await VideoSchema.aggregate([
-                {
-                    $match: {
-                        _id: new mongoose.Types.ObjectId(videoId)
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "users"
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(401, "This video is unavailable");
+    } else {
+        const theSpecificVideo = await VideoSchema.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(videoId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: 'owner',
+                    foreignField: '_id',
+                    as: 'owner',
+                    pipeline: [
+                        {
+                            $project: {
+                                fullName: 1,
+                                avatar: 1
+                            },
+                        },
+                    ]
+                }
+            },
+            {
+                $addFields: {
+                    owner: {
+                        $first: "$owner"
                     }
                 }
-            ]);
-            return res.status(200).json(new ApiResponse
-                (
-                    200,
-                    theSpecificVideo,
-                    "The video is fetched succesfully"
-                ));
-        };
+            }
+        ]);
+        return res.status(200).json(new ApiResponse(200, theSpecificVideo));
     };
-})
+});
 
 const updateVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-        //TODO: update video details like title, description, thumbnail
-        ``
-})
+    const { videoId } = req.params;
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(401, "Video is not available");
+    } else {
+        const { title, description } = req?.body;
+        if (!title) {
+            throw new ApiError(401, "Title is missing")
+        } else if (!description) {
+            throw new ApiError(401, "Description is missing")
+        }
+        const thumbnailLocalPath = req.file?.path;
+        // if (!thumbnailLocalPath) {
+        //     throw new ApiError(401, "Thumbnail is missing");
+        // }
+        const uploadedThumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+        const theVideoInstance = await VideoSchema.findByIdAndUpdate(
+            videoId,
+            {
+                $set: {
+                    title, description, thumbnail: uploadedThumbnail?.url
+                }
+            },
+            { new: true }
+        );
+        return res.status(200).json(new ApiResponse(200, theVideoInstance, "Video details update succesfully"));
+    };
+
+});
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
