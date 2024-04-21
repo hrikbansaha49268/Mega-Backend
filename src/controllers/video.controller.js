@@ -83,6 +83,52 @@ const getVideoById = asyncHandler(async (req, res) => {
                                 avatar: 1
                             },
                         },
+                        {
+                            $lookup: {
+                                from: "subscriptions",
+                                localField: "_id",
+                                foreignField: "channel",
+                                as: "subscribers"
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "subscriptions",
+                                localField: "_id",
+                                foreignField: "subscriber",
+                                as: "subscribedTo"
+                            }
+                        },
+                        {
+                            $addFields: {
+                                subscribersCount: {
+                                    $size: "$subscribers"
+                                },
+                                channelsSubscribedToCount: {
+                                    $size: "$subscribedTo"
+                                },
+                                isSubscribed: {
+                                    $cond: {
+                                        if: {
+                                            $in: [req.user?._id, "$subscribers.subscriber"]
+                                        },
+                                        then: true, else: false
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                fullName: 1,
+                                username: 1,
+                                subscribersCount: 1,
+                                channelsSubscribedToCount: 1,
+                                isSubscribed: 1,
+                                avatar: 1,
+                                coverImage: 1,
+                                email: 1
+                            }
+                        }
                     ]
                 }
             },
@@ -94,7 +140,7 @@ const getVideoById = asyncHandler(async (req, res) => {
                 }
             }
         ]);
-        return res.status(200).json(new ApiResponse(200, theSpecificVideo));
+        return res.status(200).json(new ApiResponse(200, theSpecificVideo[0]));
     };
 });
 
@@ -129,13 +175,36 @@ const updateVideo = asyncHandler(async (req, res) => {
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-    //TODO: delete video
-})
+    const { videoId } = req.params;
+    if (!isValidObjectId(videoId)) {
+        try {
+            await VideoSchema.findByIdAndDelete(videoId);
+            res.status(200).json(200, {}, "Video has been deleted Succesfully");
+        } catch (error) {
+            new ApiError(401, error.message);
+        };
+    };
+});
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-})
+    const { videoId } = req.params;
+    if (!isValidObjectId(req.user?._id) || req.user._id === (null || undefined)) {
+        throw new ApiError(401, "Unauthorized request");
+    } else {
+        if (!isValidObjectId(videoId)) {
+            throw new ApiError(401, "Invalid ID");
+        } else {
+            try {
+                const theVideoInstance = await VideoSchema.findById(videoId);
+                theVideoInstance.isPublished = !theVideoInstance.isPublished;
+                await theVideoInstance.save({ validateBeforeSave: false });
+                return res.status(200).json(new ApiResponse(200, theVideoInstance, "Video has been unpublished"));
+            } catch (error) {
+                new ApiError(401, error.message);
+            };
+        };
+    };
+});
 
 export {
     getAllVideos,
