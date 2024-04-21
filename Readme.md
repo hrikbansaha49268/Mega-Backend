@@ -1,3 +1,3 @@
-# From Chai aur Backend Series - Hitesh Chaudhary
+# Motivated From Chai aur Backend Series - Hitesh Chaudhary
 
 Backend Project
