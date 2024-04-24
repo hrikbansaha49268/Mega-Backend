@@ -12,12 +12,19 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         if (!isValidObjectId(req.user?._id) || req.user._id == null) {
             throw new ApiError(401, "Unauthorized Access");
         } else {
-            const likedDoc = await Like.create({
-                video: videoId,
-                likedBy: req.user?._id
-            });
-            likedDoc.save();
-            return res.status(200).json(new ApiResponse(200, likedDoc, "Liked!"));
+            const isLiked = await Like.findOne({ video: videoId });
+            if (!isLiked) {
+                const likedDoc = Like.create({
+                    video: videoId,
+                    likedBy: req.user?._id
+                });
+                await likedDoc.save();
+
+                return res.status(200).json(new ApiResponse(200, {}, "Liked!"));
+            } else {
+                await Like.findByIdAndDelete(isLiked._id);
+                return res.status(200).json(new ApiResponse(200, {}, "Disiked!"));
+            };
         };
     };
 });
@@ -30,12 +37,18 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
         if (!isValidObjectId(req.user?._id) || req.user._id == null) {
             throw new ApiError(401, "Unauthorized Access");
         } else {
-            const likedDoc = await Like.create({
-                video: commentId,
-                likedBy: req.user?._id
-            });
-            likedDoc.save();
-            return res.status(200).json(new ApiResponse(200, likedDoc, "Liked!"));
+            const isLiked = await Like.findOne({ comment: commentId });
+            if (!isLiked) {
+                const likedDoc = await Like.create({
+                    comment: commentId,
+                    likedBy: req.user?._id
+                });
+                await likedDoc.save();
+                return res.status(200).json(new ApiResponse(200, {}, "Liked!"));
+            } else {
+                await Like.findByIdAndDelete(isLiked._id);
+                return res.status(200).json(new ApiResponse(200, {}, "Disiked!"));
+            };
         };
     };
 
@@ -49,12 +62,18 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
         if (!isValidObjectId(req.user?._id) || req.user._id == null) {
             throw new ApiError(401, "Unauthorized Access");
         } else {
-            const likedDoc = await Like.create({
-                video: tweetId,
-                likedBy: req.user?._id
-            });
-            likedDoc.save();
-            return res.status(200).json(new ApiResponse(200, likedDoc, "Liked!"));
+            const isLiked = await Like.findOne({ tweet: tweetId });
+            if (!isLiked) {
+                const likedDoc = await Like.create({
+                    tweet: tweetId,
+                    likedBy: req.user?._id
+                });
+                await likedDoc.save();
+                return res.status(200).json(new ApiResponse(200, {}, "Liked!"));
+            } else {
+                await Like.findByIdAndDelete(isLiked._id);
+                return res.status(200).json(new ApiResponse(200, {}, "Disiked!"));
+            };
         };
     };
 });
