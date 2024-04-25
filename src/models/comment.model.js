@@ -17,5 +17,5 @@ const commentSchema = new Schema({
 }, { timestamps: true });
 
 commentSchema.plugin(mongooseAggregatePaginate);
-
+ 
 export const Comment = model("Comment", commentSchema);

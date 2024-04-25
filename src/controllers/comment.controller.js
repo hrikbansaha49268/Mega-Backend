@@ -91,13 +91,46 @@ const addComment = asyncHandler(async (req, res) => {
 });
 
 const updateComment = asyncHandler(async (req, res) => {
-    // TODO: update a comment
     const { commentId } = req.params;
+    const { commentContent } = req.body;
+    if (!commentId) {
+        throw new ApiError(401, "Comment Id is required");
+    } else if (isValidObjectId(commentId)) {
+        throw new ApiError(401, "Valid Comment Id is required");
+    } else {
+        if (commentContent == null || commentContent == undefined) {
+            throw new ApiError(401, "Content is required");
+        } else {
+            const updateableComment = await Comment.findByIdAndUpdate(
+                commentId,
+                { content: commentContent }
+            );
+            res.status(200).json(
+                new ApiResponse(200, updateableComment, "Content is updated succesfully")
+            );
+        };
+    };
 });
 
 const deleteComment = asyncHandler(async (req, res) => {
     // TODO: delete a comment
     const { commentId } = req.params;
+    if (!commentId) {
+        throw new ApiError(401, "Comment Id is required");
+    } else if (isValidObjectId(commentId)) {
+        throw new ApiError(401, "Valid Comment Id is required");
+    } else {
+        try {
+            await Comment.findByIdAndUpdate(
+                commentId,
+                { content: commentContent }
+            );
+            res.status(200)
+                .json(new ApiResponse(200, {}, "Content is updated succesfully"));
+        } catch (error) {
+            throw new ApiError(500, "Comment not deleted. Please try again");
+        };
+    };
 });
 
 export {
